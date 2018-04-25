@@ -20,6 +20,7 @@ from rawADC import readADC
 from Audio import audioFeatureExt
 from Door import doorSensor
 from PebbleFeatureExt import motionFeatExt
+from rWatchDog import watchDog
 
 from threading import Lock
 
@@ -171,6 +172,8 @@ while True:
 		USE_AUDIO = True
 		USE_DOOR = True
 
+		USE_WATCHDOG = True
+
 		# USE_LIGHT = False
 		# USE_ADC = False
 		# USE_WEATHER = False
@@ -224,7 +227,12 @@ while True:
 		if IS_PIXIE:
 			pebbleFeatThread = threading.Thread(target=motionFeatExt, args = (startDateTime, hostIP, BASE_PORT, PebbleFolder))
 			pebbleFeatThread.setDaemon(True)
-                
+
+		#for HEARTBEAT_LOG
+		if USE_WATCHDOG:
+			watchDogThread = threading.Thread(target=watchDog, args = (startDateTime, hostIP, BASE_PORT))
+			watchDogThread.setDaemon(True)
+        #for HEARTBEAT_LOG
 
 
 
@@ -249,6 +257,11 @@ while True:
 		if IS_PIXIE:
 			pebbleFeatThread.start()
 
+		#for HEARTBEAT_LOG
+		if USE_WATCHDOG:
+			watchDogThread.start()
+		#for HEARTBEAT_LOG
+
 		# wait until every thread exits (should never happen)
 		if USE_LIGHT:
 			lightThread.join()
@@ -267,6 +280,11 @@ while True:
 			doorThread.join()
 		if IS_PIXIE:
 			pebbleFeatThread.join()
+
+		#for HEARTBEAT_LOG
+		if USE_WATCHDOG:
+			watchDogThread.join()
+		#for HEARTBEAT_LOG
     
 	except:
 		print ""
